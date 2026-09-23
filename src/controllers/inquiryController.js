@@ -1,8 +1,7 @@
 const Inquiry = require('../models/Inquiry');
 const nodemailer = require('nodemailer');
 
-// Ensure this function name matches what inquiryRoutes expects
-exports.createInquiry = async (req, res) => {
+exports.submitInquiry = async (req, res) => {
   try {
     const { name, email, phone, message, property } = req.body;
 
@@ -14,7 +13,6 @@ exports.createInquiry = async (req, res) => {
       property: property || null,
     });
 
-    // Optional email dispatch logic
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -37,11 +35,11 @@ exports.createInquiry = async (req, res) => {
           <p><strong>Phone:</strong> ${phone}</p>
           <p><strong>Message:</strong> ${message}</p>
         `,
-      }).catch(err => console.error('SMTP Send Error:', err.message));
+      }).catch(err => console.error('SMTP Error:', err.message));
     }
 
     res.status(201).json({ success: true, message: 'Inquiry submitted successfully', data: inquiry });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error processing inquiry' });
+    res.status(500).json({ success: false, message: 'Server error handling inquiry' });
   }
 };
