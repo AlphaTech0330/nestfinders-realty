@@ -1,40 +1,34 @@
-const Inquiry = require('../models/Inquiry');
-const sendEmail = require('../utils/sendEmail');
+const nodemailer = require('nodemailer');
 
-// POST /api/inquiries - Create new inquiry
-exports.createInquiry = async (req, res) => {
-  try {
-    const { name, email, phone, propertyId, message } = req.body;
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT || 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-    const newInquiry = await Inquiry.create({
-      name,
-      email,
-      phone,
-      property: propertyId || null,
-      message,
-    });
-
-    // Send email notifications if configured
-    if (process.env.SMTP_HOST) {
-      try {
-        await sendEmail({
-          email: process.env.ADMIN_EMAIL || email,
-          subject: `New Property Inquiry from ${name}`,
-          html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Phone:</strong> ${phone}</p><p><strong>Message:</strong> ${message}</p>`,
-        });
-      } catch (mailError) {
-        console.error('Email alert failed:', mailError.message);
-      }
-    }
-
-    res.status(201).json({
-      success: true,
-      message: 'Inquiry submitted successfully!',
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to submit inquiry.',
-    });
+// Example send function for contact inquiries
+exports.sendInquiryNotification = async (inquiryData) => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('SMTP credentials not configured. Skipping email dispatch.');
+    return;
   }
+
+  const mailOptions = {
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+    to: process.env.EMAIL_TO || process.env.SMTP_USER,
+    subject: `New Client Inquiry: ${inquiryData.name}`,
+    html: `
+      <h3>New Inquiry Received</h3>
+      <p><strong>Name:</strong> ${inquiryData.name}</p>
+      <p><strong>Email:</strong> ${inquiryData.email}</p>
+      <p><strong>Phone:</strong> ${inquiryData.phone}</p>
+      <p><strong>Message:</strong> ${inquiryData.message}</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
 };
