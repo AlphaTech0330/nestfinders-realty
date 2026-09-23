@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+
+<main class="container" style="padding: 40px 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h2>Agent Property Portal</h2>
+            <p style="color: var(--text-muted);">Manage your property listings and publish new inventory.</p>
+        </div>
+        <a href="/agent/verify" class="btn-secondary">Check Verification Status</a>
+    </div>
+
+    <!-- Create Property Form -->
+    <section class="admin-form" style="margin-bottom: 40px;">
+        <h3>Publish New Property</h3>
+        <form action="/properties/add" method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label for="title">Property Title</label>
+                    <input type="text" id="title" name="title" placeholder="e.g. 4 Bedroom Semi-Detached Duplex" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price (₦)</label>
+                    <input type="number" id="price" name="price" placeholder="85000000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location / Area</label>
+                    <input type="text" id="location" name="location" placeholder="e.g. Alausa, Ikeja, Lagos" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="For Sale">For Sale</option>
+                        <option value="For Rent">For Rent</option>
+                        <option value="Development">Development</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bedrooms">Bedrooms</label>
+                    <input type="number" id="bedrooms" name="bedrooms" value="3" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="bathrooms">Bathrooms</label>
+                    <input type="number" id="bathrooms" name="bathrooms" value="3" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Property Description & Amenities</label>
+                <textarea id="description" name="description" rows="4" placeholder="Mention features like fitted kitchen, 24/7 security, swimming pool, C of O documentation, etc." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="images">Property Photos (Up to 5 images)</label>
+                <input type="file" id="images" name="images" multiple accept="image/*" required>
+            </div>
+
+            <button type="submit" class="btn" style="margin-top: 10px;">Publish Property Listing</button>
+        </form>
+    </section>
+
+    <!-- Active Listings Table -->
+    <h3>My Active Listings</h3>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Title & Location</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Specs</th>
+                <th>Date Added</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (properties && properties.length > 0) { %>
+                <% properties.forEach(item => { %>
+                    <tr>
+                        <td>
+                            <img src="<%= item.images[0] || '/images/default.jpg' %>" alt="<%= item.title %>" style="width: 60px; height: 50px; object-fit: cover; border-radius: 4px;">
+                        </td>
+                        <td>
+                            <strong><%= item.title %></strong><br>
+                            <small style="color: var(--text-muted);"><%= item.location %></small>
+                        </td>
+                        <td style="color: var(--secondary); font-weight: 700;">₦<%= item.price.toLocaleString() %></td>
+                        <td><span class="badge badge-resolved"><%= item.category %></span></td>
+                        <td><%= item.bedrooms %> Beds | <%= item.bathrooms %> Baths</td>
+                        <td><%= new Date(item.createdAt).toLocaleDateString() %></td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        No property listings created yet. Use the form above to add your first property.
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</main>
+
+<%- include('../partials/footer') %>

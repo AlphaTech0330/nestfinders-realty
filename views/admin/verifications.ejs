@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+
+<main class="container" style="padding: 40px 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2>Agent Verification Review Queue</h2>
+            <p style="color: var(--text-muted);">Inspect uploaded identity cards and CAC certificates to grant verification status.</p>
+        </div>
+        <a href="/admin/dashboard" class="btn">Back to Dashboard</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Agent Details</th>
+                <th>CAC Number</th>
+                <th>Submitted Documents</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (agents && agents.length > 0) { %>
+                <% agents.forEach(agent => { %>
+                    <tr>
+                        <td>
+                            <strong><%= agent.name %></strong><br>
+                            <small style="color: var(--text-muted);"><%= agent.email %></small>
+                        </td>
+
+                        <td>
+                            <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">
+                                <%= agent.cacNumber || 'N/A' %>
+                            </code>
+                        </td>
+
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <% if (agent.governmentIdDoc) { %>
+                                    <a href="<%= agent.governmentIdDoc %>" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.8rem; background-color: #0284c7;">
+                                        📄 Govt ID
+                                    </a>
+                                <% } %>
+                                <% if (agent.cacCertDoc) { %>
+                                    <a href="<%= agent.cacCertDoc %>" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.8rem; background-color: #0d9488;">
+                                        📜 CAC Cert
+                                    </a>
+                                <% } %>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="badge badge-<%= agent.verificationStatus %>">
+                                <%= agent.verificationStatus %>
+                            </span>
+                        </td>
+
+                        <td>
+                            <% if (agent.verificationStatus === 'pending') { %>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <form action="/admin/verifications/review" method="POST">
+                                        <input type="hidden" name="agentId" value="<%= agent._id %>">
+                                        <button type="submit" name="action" value="approve" class="btn" style="background-color: var(--success-text); padding: 5px 12px; font-size: 0.85rem;">
+                                            Approve
+                                        </button>
+                                    </form>
+
+                                    <button type="button" onclick="toggleRejectForm('<%= agent._id %>')" class="btn-danger" style="padding: 5px 12px; font-size: 0.85rem;">
+                                        Reject
+                                    </button>
+                                </div>
+
+                                <div id="reject-form-<%= agent._id %>" style="display: none; margin-top: 10px;">
+                                    <form action="/admin/verifications/review" method="POST">
+                                        <input type="hidden" name="agentId" value="<%= agent._id %>">
+                                        <input type="hidden" name="action" value="reject">
+                                        <input type="text" name="rejectionReason" placeholder="Reason for rejection..." required style="padding: 6px; font-size: 0.85rem; margin-bottom: 5px;">
+                                        <button type="submit" class="btn-danger" style="padding: 4px 8px; font-size: 0.8rem; width: 100%;">Confirm Rejection</button>
+                                    </form>
+                                </div>
+                            <% } else if (agent.verificationStatus === 'verified') { %>
+                                <span style="color: var(--success-text); font-weight: 600; font-size: 0.85rem;">✔ Verified</span>
+                            <% } else { %>
+                                <small style="color: var(--danger-text);"><%= agent.rejectionReason || 'Rejected' %></small>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        No pending agent verifications found in queue.
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</main>
+
+<script>
+function toggleRejectForm(id) {
+    const form = document.getElementById(`reject-form-${id}`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
+<%- include('../partials/footer') %>

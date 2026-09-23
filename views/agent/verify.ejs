@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+
+<main class="container" style="padding: 40px 20px;">
+    <div style="max-width: 650px; margin: 0 auto;">
+        <h2>Agent Identity & CAC Verification</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">
+            To list properties on Nestfinders Realty, please submit your Corporate Affairs Commission (CAC) registration details and government identity card.
+        </p>
+
+        <% if (agent.verificationStatus === 'verified') { %>
+            <div style="background: var(--success-bg); border: 1px solid #a7f3d0; color: var(--success-text); padding: 20px; border-radius: var(--radius);">
+                <h3 style="margin-bottom: 5px;">✔ Account Verified</h3>
+                <p>Your CAC registration number (<strong><%= agent.cacNumber %></strong>) and identity documents have been approved by the admin.</p>
+            </div>
+        <% } else if (agent.verificationStatus === 'pending') { %>
+            <div style="background: var(--warning-bg); border: 1px solid #fde68a; color: var(--warning-text); padding: 20px; border-radius: var(--radius);">
+                <h3 style="margin-bottom: 5px;">⏳ Verification Under Review</h3>
+                <p>Your CAC details and documents have been submitted and are currently awaiting review by the Nestfinders Realty management team.</p>
+            </div>
+        <% } else { %>
+            <% if (agent.verificationStatus === 'rejected') { %>
+                <div style="background: var(--danger-bg); border: 1px solid #fecaca; color: var(--danger-text); padding: 20px; border-radius: var(--radius); margin-bottom: 25px;">
+                    <h3 style="margin-bottom: 5px;">✖ Verification Rejected</h3>
+                    <p><strong>Reason:</strong> <%= agent.rejectionReason || 'Documents uploaded did not meet verification criteria.' %></p>
+                    <p style="margin-top: 5px; font-size: 0.9rem;">Please review your documents and re-submit below.</p>
+                </div>
+            <% } %>
+
+            <form action="/agent/verify" method="POST" enctype="multipart/form-data" class="admin-form">
+                <div class="form-group">
+                    <label for="cacNumber">CAC Business Registration Number (BN / RC Number)</label>
+                    <input type="text" id="cacNumber" name="cacNumber" value="<%= agent.cacNumber || '' %>" placeholder="e.g. RC-1234567 or BN-9876543" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="governmentIdDoc">Government-Issued ID (NIN Slip, Driver's License, or Voters Card)</label>
+                    <input type="file" id="governmentIdDoc" name="governmentIdDoc" accept=".pdf,.png,.jpg,.jpeg,.webp" required>
+                    <small style="color: var(--text-muted);">Accepted formats: PDF, PNG, JPG, WEBP (Max 10MB)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="cacCertDoc">CAC Status Report / Registration Certificate</label>
+                    <input type="file" id="cacCertDoc" name="cacCertDoc" accept=".pdf,.png,.jpg,.jpeg,.webp" required>
+                    <small style="color: var(--text-muted);">Accepted formats: PDF, PNG, JPG, WEBP (Max 10MB)</small>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Submit Documents for Verification</button>
+            </form>
+        <% } %>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

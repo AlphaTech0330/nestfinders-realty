@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+
+<main class="container">
+    <h2>Available Properties</h2>
+
+    <!-- Filter Form -->
+    <form action="/properties" method="GET" class="filter-form">
+        <input type="text" name="location" placeholder="Search Location..." value="<%= filters.location || '' %>">
+        <select name="category">
+            <option value="">All Categories</option>
+            <option value="For Sale" <%= filters.category === 'For Sale' ? 'selected' : '' %>>For Sale</option>
+            <option value="For Rent" <%= filters.category === 'For Rent' ? 'selected' : '' %>>For Rent</option>
+            <option value="Development" <%= filters.category === 'Development' ? 'selected' : '' %>>Development</option>
+        </select>
+        <button type="submit" class="btn">Filter</button>
+    </form>
+
+    <!-- Property Grid -->
+    <div class="property-grid">
+        <% if (properties.length > 0) { %>
+            <% properties.forEach(item => { %>
+                <div class="property-card">
+                    <img src="<%= item.images[0] || '/images/default.jpg' %>" alt="<%= item.title %>">
+                    <div class="card-body">
+                        <h3><%= item.title %></h3>
+                        <p class="price">₦<%= item.price.toLocaleString() %></p>
+                        <p class="location">📍 <%= item.location %></p>
+                        <div class="specs">
+                            <span>🛏️ <%= item.bedrooms %> Beds</span>
+                            <span>🛁 <%= item.bathrooms %> Baths</span>
+                        </div>
+                        <a href="/properties/<%= item._id %>" class="btn-secondary">View Details</a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No properties found matching your criteria.</p>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
