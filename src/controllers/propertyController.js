@@ -1,91 +1,85 @@
 const Property = require('../models/Property');
 
-// GET all public properties with optional search/filter queries
-exports.getProperties = async (req, res) => {
+// @desc    Get all properties (with optional filter/search)
+// @route   GET /properties
+exports.getAllProperties = async (req, res) => {
   try {
-    const { category, location, minPrice, maxPrice } = req.query;
-    let query = {};
+    const { location, type, minPrice, maxPrice } = req.query;
+    let filter = {};
 
-    if (category) query.category = category;
-    if (location) query.location = { $regex: location,$options: 'i' };
+    if (location) filter.location = { $regex: location,$options: 'i' };
+    if (type) filter.type = type;
     if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
 
-    const properties = await Property.find(query).sort({ createdAt: -1 });
-
-    res.render('listings', {
-      pageTitle: 'Property Listings | Nestfinders Realty',
-      properties,
-      filters: req.query,
-    });
+    const properties = await Property.find(filter).sort({ createdAt: -1 });
+    res.render('listings', { properties, query: req.query });
   } catch (error) {
-    res.status(500).render('error', { message: error.message });
+    console.error('Error fetching properties:', error);
+    res.status(500).render('404', { message: 'Failed to retrieve property listings' });
   }
 };
 
-// GET single property by ID
+// @desc    Get single property details
+// @route   GET /properties/:id
 exports.getPropertyById = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id).populate('agent', 'name email phone');
-    if (!property) return res.status(404).render('404');
-
-    res.render('property-detail', {
-      pageTitle: `${property.title} | Nestfinders Realty`,
-      property,
-    });
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return res.status(404).render('404', { message: 'Property not found' });
+    }
+    res.render('developments', { property });
   } catch (error) {
-    res.status(500).render('error', { message: error.message });
+    console.error('Error fetching property details:', error);
+    res.status(500).render('404', { message: 'Invalid property ID or server error' });
   }
 };
 
-// POST create new property listing
+// @desc    Render property creation form page
+// @route   GET /properties/add
+exports.getAddPropertyForm = (req, res) => {
+  res.render('agent/properties');
+};
+
+// @desc    Create a new property listing with Cloudinary image upload
+// @route   POST /properties/add
 exports.createProperty = async (req, res) => {
   try {
-    const { title, description, price, location, category, bedrooms, bathrooms, isFeatured } = req.body;
+    const { title, price, location, description, bedrooms, bathrooms, type, featured } = req.body;
 
-    // Collect uploaded image paths relative to public directory
-    const imagePaths = req.files && req.files.length > 0 
-      ? req.files.map(file => `/uploads/${file.filename}`)
-      : ['/images/default-property.jpg'];
+    // req.file.path contains the persistent Cloudinary HTTPS URL from upload middleware
+    const imageUrl = req.file ? req.file.path : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80';
 
-    const newProperty = new Property({
+    const newProperty = await Property.create({
       title,
-      description,
       price: Number(price),
       location,
-      category,
-      bedrooms: Number(bedrooms),
-      bathrooms: Number(bathrooms),
-      images: imagePaths,
-      isFeatured: isFeatured === 'on' || isFeatured === true,
-      agent: req.user ? req.user.id : null,
+      description,
+      bedrooms: Number(bedrooms) || 0,
+      bathrooms: Number(bathrooms) || 0,
+      type: type || 'Residential',
+      featured: featured === 'on' || featured === 'true' || featured === true,
+      image: imageUrl,
     });
 
-    await newProperty.save();
-
-    // Redirect based on user role
-    if (req.user && req.user.role === 'admin') {
-      return res.redirect('/admin/properties');
-    }
-    res.redirect('/agent/properties');
+    res.redirect(`/properties/${newProperty._id}`);
   } catch (error) {
-    res.status(400).send('Error creating property listing: ' + error.message);
+    console.error('Error creating property:', error);
+    res.status(500).render('404', { message: 'Failed to publish new property listing' });
   }
 };
 
-// GET agent properties portal
-exports.getAgentProperties = async (req, res) => {
+// @desc    Delete a property listing
+// @route   DELETE /properties/:id
+exports.deleteProperty = async (req, res) => {
   try {
-    const properties = await Property.find({ agent: req.user.id }).sort({ createdAt: -1 });
-    res.render('agent/properties', {
-      pageTitle: 'My Listed Properties | Nestfinders Realty',
-      properties,
-      user: req.user,
-    });
+    await Property.findByIdAndDelete(req.params.id);
+    res.redirect('/properties');
   } catch (error) {
-    res.status(500).send('Server Error: ' + error.message);
+    console.error('Error deleting property:', error);
+    res.status(500).render('404', { message: 'Failed to delete property' });
   }
 };
