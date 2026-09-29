@@ -1,31 +1,42 @@
 <%- include('partials/header') %>
 
-<main>
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Find Your Dream Nest With Us</h1>
-            <p>Your trusted real estate partner for premium properties and developments.</p>
-            <a href="/contact" class="btn">Get in Touch</a>
-        </div>
-    </section>
+<main class="homepage-container">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Find Your Dream Property with Nestfinders Realty</h1>
+      <p>Discover premium residential and commercial listings across prime locations.</p>
+      <a href="/properties" class="btn-primary">Browse All Properties</a>
+    </div>
+  </section>
 
-    <section class="services-preview">
-        <h2>What We Offer</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>Property Brokerage</h3>
-                <p>Buying, selling, and leasing properties tailored to your needs.</p>
+  <!-- Dynamic Property Gallery Section -->
+  <section class="featured-properties container">
+    <h2>Featured Property Listings</h2>
+    <div class="property-grid">
+      <% if (properties && properties.length > 0) { %>
+        <% properties.forEach(property => { %>
+          <div class="property-card">
+            <div class="property-image-container">
+              <img src="<%= property.image %>" alt="<%= property.title %>" class="property-img" loading="lazy" />
             </div>
-            <div class="card">
-                <h3>Real Estate Development</h3>
-                <p>Modern housing and commercial space developments.</p>
+            <div class="property-card-body">
+              <h3><%= property.title %></h3>
+              <p class="price">₦<%= property.price ? property.price.toLocaleString() : 'N/A' %></p>
+              <p class="location"><i class="fas fa-map-marker-alt"></i> <%= property.location %></p>
+              <div class="specs">
+                <span><i class="fas fa-bed"></i> <%= property.bedrooms %> Beds</span>
+                <span><i class="fas fa-bath"></i> <%= property.bathrooms %> Baths</span>
+              </div>
+              <a href="/properties/<%= property._id %>" class="btn-details">View Details</a>
             </div>
-            <div class="card">
-                <h3>Property Management</h3>
-                <p>Seamless management and asset valuation.</p>
-            </div>
-        </div>
-    </section>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="no-properties">No property listings available at the moment.</p>
+      <% } %>
+    </div>
+  </section>
 </main>
 
 <%- include('partials/footer') %>

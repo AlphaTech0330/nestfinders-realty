@@ -1,16 +1,43 @@
 <%- include('partials/header') %>
 
-<main class="container" style="padding: 40px 20px;">
-    <h2>Future & Active Developments</h2>
-    <p>Explore upcoming real estate projects and residential estates by Nestfinders Realty.</p>
-    
-    <div class="developments-list" style="margin-top: 20px;">
-        <div class="card" style="padding: 20px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
-            <h3>The Nest Residences - Phase 1</h3>
-            <p><strong>Location:</strong> Alausa, Lagos</p>
-            <p>Modern 3-bedroom luxury apartments featuring sustainable design and top-tier amenities.</p>
-        </div>
+<main class="container property-detail-page">
+  <% if (property) { %>
+    <div class="property-detail-header">
+      <h1><%= property.title %></h1>
+      <p class="location-tag"><i class="fas fa-map-marker-alt"></i> <%= property.location %></p>
     </div>
+
+    <div class="property-detail-grid">
+      <div class="property-main-media">
+        <img src="<%= property.image %>" alt="<%= property.title %>" class="featured-detail-img" />
+      </div>
+
+      <div class="property-sidebar">
+        <div class="pricing-card">
+          <h2>Listing Price</h2>
+          <p class="detail-price">₦<%= property.price ? property.price.toLocaleString() : 'N/A' %></p>
+          
+          <div class="quick-specs">
+            <p><strong>Property Type:</strong> <%= property.type %></p>
+            <p><strong>Bedrooms:</strong> <%= property.bedrooms %></p>
+            <p><strong>Bathrooms:</strong> <%= property.bathrooms %></p>
+          </div>
+
+          <a href="/contact?property=<%= property._id %>" class="btn-primary full-width">Inquire About This Property</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="property-description-box">
+      <h3>Overview & Property Features</h3>
+      <p><%= property.description %></p>
+    </div>
+  <% } else { %>
+    <div class="not-found-box">
+      <h2>Property Details Not Found</h2>
+      <a href="/properties" class="btn-primary">Back to All Properties</a>
+    </div>
+  <% } %>
 </main>
 
 <%- include('partials/footer') %>

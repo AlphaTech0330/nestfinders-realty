@@ -1,24 +1,31 @@
-// Render Homepage
-exports.getHomePage = (req, res) => {
-  res.render('index', { pageTitle: 'Nestfinders Realty - Home' });
+const Property = require('../models/Property');
+
+// @desc    Render Homepage with dynamic property listings
+// @route   GET /
+exports.getHomePage = async (req, res) => {
+  try {
+    const featuredProperties = await Property.find().sort({ createdAt: -1 }).limit(6);
+    res.render('index', { properties: featuredProperties });
+  } catch (error) {
+    console.error('Error fetching homepage properties:', error);
+    res.render('index', { properties: [] });
+  }
 };
 
-// Render About Page
+// @desc    Render About Page
+// @route   GET /about
 exports.getAboutPage = (req, res) => {
-  res.render('about', { pageTitle: 'About Us | Nestfinders Realty' });
+  res.render('about');
 };
 
-// Render Services Page
+// @desc    Render Services Page
+// @route   GET /services
 exports.getServicesPage = (req, res) => {
-  res.render('services', { pageTitle: 'Our Services | Nestfinders Realty' });
+  res.render('services');
 };
 
-// Render Developments Page
-exports.getDevelopmentsPage = (req, res) => {
-  res.render('developments', { pageTitle: 'Developments | Nestfinders Realty' });
-};
-
-// Render Contact Page
+// @desc    Render Contact Page (supports pre-selecting a property)
+// @route   GET /contact
 exports.getContactPage = (req, res) => {
-  res.render('contact', { pageTitle: 'Contact Us | Nestfinders Realty' });
+  res.render('contact', { propertyId: req.query.property || null });
 };

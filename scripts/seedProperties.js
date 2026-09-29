@@ -1,107 +1,54 @@
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const path = require('path');
-
-// 1. Explicitly load environment variables from the root .env file
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-// 2. Import Models
 const Property = require('../src/models/Property');
-const User = require('../src/models/User');
+require('dotenv').config();
 
-// Sample real estate listings for Nestfinders Realty
-const sampleProperties = [
+const seedData = [
   {
-    title: '4 Bedroom Luxury Terrace Duplex',
-    description: 'Contemporary 4-bedroom terrace duplex featuring fully fitted kitchen, bulletproof security doors, 24/7 power backup, and a swimming pool.',
-    price: 120000000,
-    location: 'Alausa, Ikeja, Lagos',
-    category: 'For Sale',
-    bedrooms: 4,
-    bathrooms: 4,
-    images: ['/images/default-property.jpg'],
-    isFeatured: true,
-  },
-  {
-    title: 'Modern 3 Bedroom Apartment',
-    description: 'Spacious 3-bedroom apartment with all rooms ensuite, water treatment plant, fitted wardrobes, and dedicated parking space.',
-    price: 4500000,
-    location: 'Allen Avenue, Ikeja, Lagos',
-    category: 'For Rent',
-    bedrooms: 3,
-    bathrooms: 3,
-    images: ['/images/default-property.jpg'],
-    isFeatured: false,
-  },
-  {
-    title: 'The Nest Residences Phase II',
-    description: 'Off-plan residential development project offering modern smart apartments, underground drainage, and solar streetlights.',
-    price: 85000000,
-    location: 'CBD, Alausa, Lagos',
-    category: 'Development',
-    bedrooms: 3,
-    bathrooms: 3,
-    images: ['/images/default-property.jpg'],
-    isFeatured: true,
-  },
-  {
-    title: '5 Bedroom Detached Villa with BQ',
-    description: 'Ultra-modern 5-bedroom villa with smart home automation, private cinema, rooftop terrace, and a 2-room boys quarters.',
-    price: 250000000,
-    location: 'Gbagada Phase 2, Lagos',
-    category: 'For Sale',
+    title: "Lekki Phase 1 Luxury Duplex",
+    price: 180000000,
+    location: "Lekki Phase 1, Lagos",
+    description: "Exquisite 5 bedroom fully detached duplex featuring modern architecture, smart home automation, private swimming pool, and 24/7 security.",
     bedrooms: 5,
     bathrooms: 6,
-    images: ['/images/default-property.jpg'],
-    isFeatured: true,
+    type: "Residential",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80"
   },
   {
-    title: 'Commercial Office Space',
-    description: 'Open-plan commercial office floor available for lease, equipped with elevators, security, and central HVAC systems.',
-    price: 12000000,
-    location: 'Ikeja GRA, Lagos',
-    category: 'For Rent',
+    title: "Ikoyi Executive Waterfront Apartment",
+    price: 250000000,
+    location: "Ikoyi, Lagos",
+    description: "Premium 3 bedroom waterfront apartment with panoramic ocean views, gym access, underground parking, and high-speed elevators.",
+    bedrooms: 3,
+    bathrooms: 4,
+    type: "Residential",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    title: "Victoria Island Commercial Office Complex",
+    price: 95000000,
+    location: "Victoria Island, Lagos",
+    description: "Open-plan corporate office space located in the prime business district of Victoria Island with central air conditioning and backup power generators.",
     bedrooms: 0,
     bathrooms: 2,
-    images: ['/images/default-property.jpg'],
-    isFeatured: false,
-  },
+    type: "Commercial",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"
+  }
 ];
 
-const seedDatabase = async () => {
+const seedDB = async () => {
   try {
-    // Determine database connection URI
-    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
-
-    if (!mongoUri) {
-      throw new Error('Database connection URI (MONGODB_URI or MONGO_URI) is missing from your .env file!');
-    }
-
-    // Connect to MongoDB
-    await mongoose.connect(mongoUri);
-    console.log('MongoDB Connected successfully.');
-
-    // Fetch an admin/agent user to associate with seeded properties
-    const sampleUser = await User.findOne();
-
-    // Attach user ID as the posting agent if a user exists
-    const propertiesToSeed = sampleProperties.map((prop) => ({
-      ...prop,
-      agent: sampleUser ? sampleUser._id : null,
-    }));
-
-    // Clear existing properties and insert seed properties
-    await Property.deleteMany();
-    console.log('Cleared existing property records.');
-
-    const createdProperties = await Property.insertMany(propertiesToSeed);
-    console.log(`Successfully seeded ${createdProperties.length} properties for Nestfinders Realty!`);
-
+    await mongoose.connect(process.env.MONGODB_URI);
+    await Property.deleteMany({});
+    await Property.insertMany(seedData);
+    console.log("Database successfully seeded with properties and high-res image URLs!");
     process.exit(0);
   } catch (error) {
-    console.error('Error seeding properties database:', error.message);
+    console.error("Seeding error:", error);
     process.exit(1);
   }
 };
 
-seedDatabase();
+seedDB();
